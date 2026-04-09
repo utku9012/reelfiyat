@@ -124,9 +124,9 @@ export default function Home() {
       {showGuide ? (
         <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm md:p-6">
           <h2 className="text-lg font-semibold text-emerald-900 md:text-xl">Nasil Calisir?</h2>
-          <p className="mt-2 text-base text-emerald-900 md:text-lg">1) Urun, vade ve oranlari girin; enflasyon verisi otomatik gelir.</p>
-          <p className="text-base text-emerald-900 md:text-lg">2) Sistem taksitleri tarih bazli indirger ve fon getirisini net hesaplar.</p>
-          <p className="text-base text-emerald-900 md:text-lg">3) Sonuclarda ödediğiniz reel fiyatı ve net kazancınızı görün.</p>
+          <p className="mt-2 text-base text-emerald-900 md:text-lg">1) Ürün, vade ve oranları girin; enflasyon verisi otomatik gelir.</p>
+          <p className="text-base text-emerald-900 md:text-lg">2) Sistem taksitleri tarih bazlı indirger ve fon getirisini net hesaplar.</p>
+          <p className="text-base text-emerald-900 md:text-lg">3) Sonuçlarda ödediğiniz reel fiyatı ve bu süreçte elde ettiğiniz net kazancınızı görün.</p>
           <button
             type="button"
             onClick={closeGuide}
