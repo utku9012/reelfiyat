@@ -32,3 +32,20 @@ jobs:
       run: |
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+    - name: Deploy to EC2 via SSH
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ec2-user
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          # ECR'a login ol
+          aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin 451620995684.dkr.ecr.eu-central-1.amazonaws.com
+          # Eski konteyneri durdur ve sil (varsa)
+          docker stop reelfiyat-container || true
+          docker rm reelfiyat-container || true
+          # Yeni imajı çek
+          docker pull 451620995684.dkr.ecr.eu-central-1.amazonaws.com/reelfiyat-app:latest
+          # Yeni konteyneri ayağa kaldır
+          docker run -d --name reelfiyat-container -p 80:3000 451620995684.dkr.ecr.eu-central-1.amazonaws.com/reelfiyat-app:latest
