@@ -2,7 +2,7 @@ name: Build and Push to ECR
 
 on:
   push:
-    branches: [ "main" ] # Sadece main branch'ine push yapıldığında çalışır
+    branches: [ "main" ]
 
 jobs:
   deploy:
@@ -26,26 +26,31 @@ jobs:
     - name: Build, tag, and push image to Amazon ECR
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: reelfiyat-app # Terraform'da verdiğin isimle aynı olmalı
-        IMAGE_TAG: latest # Veya ${{ github.sha }} ile her sürümü tekilleştirebilirsin
-        working-directory: utku9012/reelfiyat/reelfiyat-main
+        ECR_REPOSITORY: reelfiyat-app
+        IMAGE_TAG: latest
+      working-directory: . # Dosyaların kök dizindeyse nokta kalsın, alt klasördeyse yolunu yaz
       run: |
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
     - name: Deploy to EC2 via SSH
-      uses: appleboy/ssh-action@master
+      uses: appleboy/ssh-action@v1.0.3 # Daha güncel bir versiyon kullandım
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ec2-user
         key: ${{ secrets.EC2_SSH_KEY }}
+        port: 22
         script: |
-          # ECR'a login ol
+          # ECR'a login ol (IAM Role sayesinde anahtar gerektirmez)
           aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin 451620995684.dkr.ecr.eu-central-1.amazonaws.com
-          # Eski konteyneri durdur ve sil (varsa)
+          
+          # Mevcut konteyneri durdur ve temizle
           docker stop reelfiyat-container || true
           docker rm reelfiyat-container || true
-          # Yeni imajı çek
+          
+          # Eski imajı temizle (yer kaplamasın)
+          docker rmi 451620995684.dkr.ecr.eu-central-1.amazonaws.com/reelfiyat-app:latest || true
+          
+          # Yeni imajı çek ve çalıştır
           docker pull 451620995684.dkr.ecr.eu-central-1.amazonaws.com/reelfiyat-app:latest
-          # Yeni konteyneri ayağa kaldır
           docker run -d --name reelfiyat-container -p 80:3000 451620995684.dkr.ecr.eu-central-1.amazonaws.com/reelfiyat-app:latest
